@@ -1,0 +1,25 @@
+{
+  "name": "hierarch",
+  "version": "0.0.1",
+  "description": "Load data from CSV and generate display in a hierarchical format",
+  "main": "index.js",
+  "scripts": {
+    "run": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evinowen/hierarch.git"
+  },
+  "author": "Evin Owen <mail@evinowen.net>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/evinowen/hierarch/issues"
+  },
+  "homepage": "https://github.com/evinowen/hierarch#readme",
+  "dependencies": {
+    "commander": "^7.2.0",
+    "csv-parse": "^4.15.4",
+    "sqlite3": "^5.0.2"
+  }
+}
