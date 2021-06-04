@@ -1,3 +1,4 @@
+const config = require('../config')
 const fs = require('fs');
 const parser = require('csv-parse');
 const sqlite3 = require('sqlite3').verbose();
@@ -7,7 +8,7 @@ module.exports = (program) => {
     .description('Load a dataset into the database')
     .action((source, table) => {
       console.log(source);
-      let db = new sqlite3.Database(':memory:', (err) => {
+      let db = new sqlite3.Database(config.DATABASE_PATH, (err) => {
         if (err) {
           console.error("ERROR ERROR ERROR: ", err.message);
         }
