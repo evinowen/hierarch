@@ -6,13 +6,12 @@ const sqlite3 = require("sqlite3").verbose();
 module.exports = (program) => {
   program.command("load <source> <table>")
     .description("Load a dataset into the database")
-    .action((source, table) => {
-      console.log(source);
-      let db = new sqlite3.Database(config.DATABASE_PATH, (err) => {
-        if (err) {
-          console.error("ERROR ERROR ERROR: ", err.message);
-        }
-      });
+    .action(async (source, table) => {
+      process.stdout.write(`Loading data from ${source} into ${table}\n`);
+
+      let db = await (new Promise((resolve, reject) => {
+        let db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
+      }))
 
       let initalized = false;
       let statement;
