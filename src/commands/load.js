@@ -15,7 +15,6 @@ module.exports = (program) => {
 
       let initalized = false;
       let statement;
-      let parameters;
 
       let stream = fs.createReadStream(source)
         .pipe(parser())
@@ -30,13 +29,11 @@ module.exports = (program) => {
                 .replace(/^[^A-Za-z0-9]/, "_")
             })
 
-            parameters = "? ".repeat(headers.length).trim().split(" ").join(", ")
-
             initalized = await (new Promise((resolve, reject) => db.exec(`CREATE TABLE ${table} (${headers})`, (error) => error ? reject(error) : resolve(true))))
 
             statement = await (new Promise((resolve, reject) => {
               let statement = db.prepare(
-                `INSERT INTO ${table} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO ${table} VALUES (${"? ".repeat(headers.length).trim().split(" ").join(", ")})`,
                 (error) => error ? reject(error) : resolve(statement))
             }))
 
