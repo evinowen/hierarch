@@ -1,11 +1,11 @@
-const config = require('../config')
-const fs = require('fs');
-const parser = require('csv-parse');
-const sqlite3 = require('sqlite3').verbose();
+const config = require("../config")
+const fs = require("fs");
+const parser = require("csv-parse");
+const sqlite3 = require("sqlite3").verbose();
 
 module.exports = (program) => {
-  program.command('load <source> <table>')
-    .description('Load a dataset into the database')
+  program.command("load <source> <table>")
+    .description("Load a dataset into the database")
     .action((source, table) => {
       console.log(source);
       let db = new sqlite3.Database(config.DATABASE_PATH, (err) => {
@@ -20,7 +20,7 @@ module.exports = (program) => {
 
       let stream = fs.createReadStream(source)
         .pipe(parser())
-        .on('data', async (row) => {
+        .on("data", async (row) => {
           stream.pause()
 
           if (!initalized) {
@@ -48,7 +48,7 @@ module.exports = (program) => {
 
           stream.resume()
         })
-        .on('end', async () => {
+        .on("end", async () => {
           statement.finalize()
 
           statement = await (new Promise((resolve, reject) => { let statement = db.prepare(`SELECT COUNT(*) count FROM ${table}`, (err) => err ? reject(err) : resolve(statement))} ))

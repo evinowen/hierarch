@@ -1,5 +1,5 @@
-const { program } = require('commander');
+const { program } = require("commander");
 
-require('./commands/load')(program)
+require("./commands/load")(program)
 
 program.parse(process.argv);
