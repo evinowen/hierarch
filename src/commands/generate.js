@@ -18,8 +18,6 @@ class Node {
   }
 
   state (index) {
-    console.log(`CHECK STATE FOR ${index}/${this.members.length}`, Node.States)
-
     if (index == 0) {
       return this.members.length == 1 ? Node.States.ONLY : Node.States.FIRST
     }
@@ -121,8 +119,6 @@ module.exports = (program) => {
         GROUP BY ${fields.join(", ")}
         ORDER BY ${fields.join(", ")}
       `
-
-      console.log(query)
 
       let statement = await (new Promise((resolve, reject) => {
         let statement = db.prepare(query, (error) => error ? reject(error) : resolve(statement))
