@@ -51,15 +51,15 @@ class Node {
       let padding = `0 ${pad_right} 0 ${pad_left}`
 
       content = `
-        <div>
-          <div style="float: left; border-bottom: 1px solid black; height: 20px; margin-bottom: -20px; padding: ${padding};">
+        <div style="margin-top: -20px">
+          <div style="float: left; border-bottom: 6px solid black; height: 20px; margin-bottom: -20px; width: 240px; padding: ${padding};">
             <div style="height: 40px;">
-              <div style="border: 1px solid black; background: white; height: 100%;">
+              <div style="padding: 10px; border: 6px solid black; background: #222; height: 100%; text-align: center;">
                 <strong>${this.title}</strong>
               </div>
             </div>
           </div>
-          <div style="float: left; border-left: 1px solid black; margin-top: 20px">
+          <div style="float: left; border-left: 6px solid black; min-height: 5px; margin-top: 20px">
             ${content}
           </div>
         </div>
@@ -67,10 +67,37 @@ class Node {
       `
 
       if (![Node.States.ONLY, Node.States.LAST].includes(state)) {
-        content += `
-          <div style="height: 40px; clear: both;"></div>
-        `
+
+        if (!depth) {
+          content += `
+            <div style="height: 80px; clear: both;">
+            </div>
+            <div style="border: 1px dotted black; margin: auto"></div>
+            <div style="height: 80px; clear: both;">
+            </div>
+
+          `
+        } else {
+          content += `
+            <div style="height: 80px; clear: both;"></div>
+          `
+        }
       }
+    } else {
+      content = `
+        <html>
+          <head>
+            <title>hierarch render</title>
+            <link rel="preconnect" href="https://fonts.gstatic.com">
+            <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+          </head>
+          <body style="background: #444; color: white; font-family: 'Roboto', sans-serif; font-size: 1.2em;">
+            <div style="margin: 40px 0">
+              ${content}
+            </div>
+          </body>
+        </html>
+      `
     }
 
     return content
