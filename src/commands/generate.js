@@ -8,9 +8,7 @@ class Generate {
   async action (table, relationships) {
     process.stdout.write(`Generating hierarchical map\n`);
 
-    let db = await (new Promise((resolve, reject) => {
-      let db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
-    }))
+    let db = await this.connectDatabase()
 
     let fields = []
     let identifiers = []
@@ -79,6 +77,12 @@ class Generate {
     await (new Promise((resolve, reject) => fs.writeFile(render, html, (err) => err ? reject(err) : resolve(true))))
 
     console.log(`Render complete at ${render}`)
+  }
+
+  async connectDatabase () {
+    return new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
+    })
   }
 }
 
