@@ -42,11 +42,9 @@ class Generate {
 
     database.close()
 
-    let html = root.print()
-    let render = path.resolve(config.RENDER_PATH)
-    await (new Promise((resolve, reject) => fs.writeFile(render, html, (err) => err ? reject(err) : resolve(true))))
+    const file = await this.outputDocument(root)
 
-    console.log(`Render complete at ${render}`)
+    console.log(`Render complete at ${file}`)
   }
 
   iterateStatement (statement, callback) {
@@ -94,6 +92,13 @@ class Generate {
       GROUP BY ${fields.join(", ")}
       ORDER BY ${fields.join(", ")}
     `
+  }
+
+  outputDocument (root) {
+    const html = root.print()
+    const render = path.resolve(config.RENDER_PATH)
+
+    return new Promise((resolve, reject) => fs.writeFile(render, html, (err) => err ? reject(err) : resolve(render)))
   }
 }
 
