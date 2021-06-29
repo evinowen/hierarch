@@ -12,16 +12,7 @@ class Generate {
 
     const {fields, identifiers, titles} = this.breakoutRelationships(relationships)
 
-    let query = `
-      SELECT ${fields.join(", ")}
-      FROM ${table}
-      GROUP BY ${fields.join(", ")}
-      ORDER BY ${fields.join(", ")}
-    `
-
-    let statement = await (new Promise((resolve, reject) => {
-      let statement = db.prepare(query, (error) => error ? reject(error) : resolve(statement))
-    }))
+    const statement = await this.prepareStatement(db, table, fields)
 
     let root = new Node(null, "ROOT NODE")
     let node = root
@@ -90,6 +81,19 @@ class Generate {
     }
 
     return { fields, identifiers, titles }
+  }
+
+  async prepareStatement (db, table, fields) {
+    let query = `
+      SELECT ${fields.join(", ")}
+      FROM ${table}
+      GROUP BY ${fields.join(", ")}
+      ORDER BY ${fields.join(", ")}
+    `
+
+    return new Promise((resolve, reject) => {
+      let statement = db.prepare(query, (error) => error ? reject(error) : resolve(statement))
+    })
   }
 }
 
