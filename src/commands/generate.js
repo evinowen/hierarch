@@ -1,18 +1,21 @@
 const config = require("../config")
 const fs = require("fs");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
+const Database = require("../objects/Database")
 const Node = require("../objects/Node")
 
 class Generate {
   async action (table, relationships) {
     process.stdout.write(`Generating hierarchical map\n`);
 
-    let db = await this.connectDatabase()
+    let database = new Database(config.DATABASE_PATH)
+
+    await database.connect()
 
     const {fields, identifiers, titles} = this.breakoutRelationships(relationships)
+    const query = this.prepareQuery(table, fields)
 
-    const statement = await this.prepareStatement(db, table, fields)
+    const statement = await database.prepare(query)
 
     let root = new Node(null, "ROOT NODE")
     let node = root
@@ -52,12 +55,6 @@ class Generate {
     console.log(`Render complete at ${render}`)
   }
 
-  async connectDatabase () {
-    return new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
-    })
-  }
-
   breakoutRelationships (relationships) {
     const fields = []
     const identifiers = []
@@ -83,17 +80,13 @@ class Generate {
     return { fields, identifiers, titles }
   }
 
-  async prepareStatement (db, table, fields) {
-    let query = `
+  prepareQuery (table, fields) {
+    return `
       SELECT ${fields.join(", ")}
       FROM ${table}
       GROUP BY ${fields.join(", ")}
       ORDER BY ${fields.join(", ")}
     `
-
-    return new Promise((resolve, reject) => {
-      let statement = db.prepare(query, (error) => error ? reject(error) : resolve(statement))
-    })
   }
 }
 
