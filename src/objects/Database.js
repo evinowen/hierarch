@@ -1,4 +1,4 @@
-const sqlite3 = require("sqlite3").verbose()
+const sqlite3 = require("sqlite3")
 
 class Database {
   constructor (path) {
@@ -8,15 +8,13 @@ class Database {
 
   async connect () {
     this.connection = await (new Promise((resolve, reject) => {
-      const db = new sqlite3.Database(this.path, (error) => error && reject(error))
-      resolve(db)
+      resolve(new sqlite3.Database(this.path, (error) => error && reject(error)))
     }))
   }
 
-  async prepare (query) {
+  prepare (query) {
     return new Promise((resolve, reject) => {
-      let statement = this.connection.prepare(query, (error) => error && reject(error))
-      resolve(statement)
+      resolve(this.connection.prepare(query, (error) => error && reject(error)))
     })
   }
 
