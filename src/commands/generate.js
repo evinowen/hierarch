@@ -17,7 +17,7 @@ class Generate {
 
     const statement = await database.prepare(query)
 
-    let root = new Node(null, "ROOT NODE")
+    let root = new Node()
     let node = root
 
     let state = []
