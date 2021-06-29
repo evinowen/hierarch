@@ -12,6 +12,12 @@ class Database {
     }))
   }
 
+  execute (query) {
+    return new Promise((resolve, reject) => {
+      resolve(this.connection.exec(query, (error) => error && reject(error)))
+    })
+  }
+
   prepare (query) {
     return new Promise((resolve, reject) => {
       resolve(this.connection.prepare(query, (error) => error && reject(error)))
