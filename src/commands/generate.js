@@ -21,28 +21,22 @@ class Generate {
     let node = root
 
     let state = []
-    let rows = await (new Promise((resolve, reject) => statement.each(
-      (err, row) => {
-        if (err) {
-          reject(err)
-        }
 
-        for (let index = state.length - 1; index >= 0; index--) {
-          if (state[index] != row[identifiers[index]]) {
-            node = node.parent
-            state.pop()
-          }
+    await this.iterateStatement(statement, (row) => {
+      for (let index = state.length - 1; index >= 0; index--) {
+        if (state[index] != row[identifiers[index]]) {
+          node = node.parent
+          state.pop()
         }
+      }
 
-        while (state.length < identifiers.length - 1) {
-          node = node.add(row[titles[state.length]], row[identifiers[state.length]])
-          state.push(row[identifiers[state.length]])
-        }
+      while (state.length < identifiers.length - 1) {
+        node = node.add(row[titles[state.length]], row[identifiers[state.length]])
+        state.push(row[identifiers[state.length]])
+      }
 
-        node.add(row[titles[state.length]], row[identifiers[state.length]])
-      },
-      (err, rows) => err ? reject(err) : resolve(rows)
-    )))
+      node.add(row[titles[state.length]], row[identifiers[state.length]])
+    })
 
     statement.finalize()
 
@@ -53,6 +47,19 @@ class Generate {
     await (new Promise((resolve, reject) => fs.writeFile(render, html, (err) => err ? reject(err) : resolve(true))))
 
     console.log(`Render complete at ${render}`)
+  }
+
+  iterateStatement (statement, callback) {
+    return new Promise((resolve, reject) => statement.each(
+      (err, row) => {
+        if (err) {
+          reject(err)
+        }
+
+        callback(row)
+      },
+      (err, _) => err ? reject(err) : resolve()
+    ))
   }
 
   breakoutRelationships (relationships) {
