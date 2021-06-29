@@ -12,6 +12,10 @@ class Database {
     }))
   }
 
+  async createTable (table, columns) {
+    return this.execute(`CREATE TABLE ${table} (${columns})`)
+  }
+
   execute (query) {
     return new Promise((resolve, reject) => {
       resolve(this.connection.exec(query, (error) => error && reject(error)))

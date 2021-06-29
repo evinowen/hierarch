@@ -23,7 +23,7 @@ class Load {
           process.stdout.write(`Create table ${table} ... `);
           const columns = this.createColumnsFromHeaders(row)
 
-          initalized = await database.execute(`CREATE TABLE ${table} (${headers})`)
+          initalized = await database.createTable(columns)
 
           statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
 
