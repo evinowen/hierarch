@@ -10,25 +10,7 @@ class Generate {
 
     let db = await this.connectDatabase()
 
-    let fields = []
-    let identifiers = []
-    let titles = []
-    for (let relationship of relationships) {
-      let parsed = relationship.split(":")
-
-      if (parsed.length > 1) {
-        titles.push(parsed[0])
-        fields.push(parsed[0])
-
-        identifiers.push(parsed[1])
-        fields.push(parsed[1])
-      } else {
-        titles.push(parsed[0])
-        identifiers.push(parsed[0])
-        fields.push(parsed[0])
-      }
-
-    }
+    const {fields, identifiers, titles} = this.breakoutRelationships(relationships)
 
     let query = `
       SELECT ${fields.join(", ")}
@@ -83,6 +65,31 @@ class Generate {
     return new Promise((resolve, reject) => {
       const db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
     })
+  }
+
+  breakoutRelationships (relationships) {
+    const fields = []
+    const identifiers = []
+    const titles = []
+
+    for (const relationship of relationships) {
+      const parsed = relationship.split(":")
+
+      if (parsed.length > 1) {
+        titles.push(parsed[0])
+        fields.push(parsed[0])
+
+        identifiers.push(parsed[1])
+        fields.push(parsed[1])
+      } else {
+        titles.push(parsed[0])
+        identifiers.push(parsed[0])
+        fields.push(parsed[0])
+      }
+
+    }
+
+    return { fields, identifiers, titles }
   }
 }
 
