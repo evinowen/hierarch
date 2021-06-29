@@ -46,7 +46,7 @@ class Generate {
 
     statement.finalize()
 
-    db.close()
+    database.close()
 
     let html = root.print()
     let render = path.resolve(config.RENDER_PATH)

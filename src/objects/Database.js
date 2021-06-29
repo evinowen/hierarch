@@ -19,6 +19,12 @@ class Database {
       resolve(statement)
     })
   }
+
+  close () {
+    if (this.connection) {
+      this.connection.close()
+    }
+  }
 }
 
 module.exports = Database
