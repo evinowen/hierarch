@@ -21,15 +21,11 @@ class Load {
 
         if (!initalized) {
           process.stdout.write(`Create table ${table} ... `);
-          let headers = row.map(column => {
-            return column
-              .replaceAll(/[^A-Za-z0-9]/g, "_")
-              .replace(/^[^A-Za-z0-9]/, "_")
-          })
+          const columns = this.createColumnsFromHeaders(row)
 
           initalized = await database.execute(`CREATE TABLE ${table} (${headers})`)
 
-          statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(headers.length).trim().split(" ").join(", ")})`)
+          statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
 
           process.stdout.write(`complete.\n`);
         } else {
@@ -51,6 +47,14 @@ class Load {
 
         database.close();
       });
+  }
+
+  createColumnsFromHeaders (headers) {
+    return headers.map(header => {
+      return header
+        .replaceAll(/[^A-Za-z0-9]/g, "_")
+        .replace(/^[^A-Za-z0-9]/, "_")
+    })
   }
 }
 
