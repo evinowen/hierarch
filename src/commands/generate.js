@@ -1,12 +1,12 @@
 const config = require("../config")
-const fs = require("fs");
-const path = require("path");
+const fs = require("fs")
+const path = require("path")
 const Database = require("../objects/Database")
 const Node = require("../objects/Node")
 
 class Generate {
   async action (table, relationships) {
-    process.stdout.write(`Generating hierarchical map\n`);
+    process.stdout.write(`Generating hierarchical map\n`)
 
     let database = new Database(config.DATABASE_PATH)
 
@@ -105,5 +105,5 @@ class Generate {
 module.exports = (program) => {
   program.command("generate <table> <relationships...>")
     .description("Generate hierarchical map of data based on relationships")
-    .action((...args) => (new Generate()).action(...args));
+    .action((...args) => (new Generate()).action(...args))
 }
