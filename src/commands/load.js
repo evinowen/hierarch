@@ -1,7 +1,7 @@
 const config = require("../config")
 const fs = require("fs");
 const parser = require("csv-parse");
-const sqlite3 = require("sqlite3").verbose();
+const Database = require("../objects/Database")
 
 module.exports = (program) => {
   program.command("load <source> <table>")
@@ -9,9 +9,9 @@ module.exports = (program) => {
     .action(async (source, table) => {
       process.stdout.write(`Loading data from ${source} into ${table}\n`);
 
-      let db = await (new Promise((resolve, reject) => {
-        let db = new sqlite3.Database(config.DATABASE_PATH, (error) => error ? reject(error) : resolve(db))
-      }))
+      let database = new Database(config.DATABASE_PATH)
+
+      await database.connect()
 
       let initalized = false;
       let statement;
@@ -29,13 +29,9 @@ module.exports = (program) => {
                 .replace(/^[^A-Za-z0-9]/, "_")
             })
 
-            initalized = await (new Promise((resolve, reject) => db.exec(`CREATE TABLE ${table} (${headers})`, (error) => error ? reject(error) : resolve(true))))
+            initalized = await database.execute(`CREATE TABLE ${table} (${headers})`)
 
-            statement = await (new Promise((resolve, reject) => {
-              let statement = db.prepare(
-                `INSERT INTO ${table} VALUES (${"? ".repeat(headers.length).trim().split(" ").join(", ")})`,
-                (error) => error ? reject(error) : resolve(statement))
-            }))
+            statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(headers.length).trim().split(" ").join(", ")})`)
 
             process.stdout.write(`complete.\n`);
           } else {
@@ -47,7 +43,7 @@ module.exports = (program) => {
         .on("end", async () => {
           statement.finalize()
 
-          statement = await (new Promise((resolve, reject) => { let statement = db.prepare(`SELECT COUNT(*) count FROM ${table}`, (err) => err ? reject(err) : resolve(statement))} ))
+          statement = await database.prepare(`SELECT COUNT(*) count FROM ${table}`)
 
           let row = await (new Promise((resolve, reject) => statement.get((err, row) => err ? reject(err) : resolve(row))))
 
@@ -55,7 +51,7 @@ module.exports = (program) => {
 
           statement.finalize()
 
-          db.close();
+          database.close();
         });
     });
 }
