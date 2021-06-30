@@ -5,7 +5,7 @@ const Database = require("../objects/Database")
 const Node = require("../objects/Node")
 
 class Generate {
-  async action (table, relationships) {
+  async action (table, relationships, options) {
     process.stdout.write(`Generating hierarchical map\n`)
 
     let database = new Database(config.DATABASE_PATH)
@@ -13,7 +13,7 @@ class Generate {
     await database.connect()
 
     const {fields, identifiers, titles} = this.breakoutRelationships(relationships)
-    const query = this.prepareQuery(table, fields)
+    const query = this.prepareQuery(table, fields, options.filter ?? [])
 
     const statement = await database.prepare(query)
 
@@ -84,10 +84,28 @@ class Generate {
     return { fields, identifiers, titles }
   }
 
-  prepareQuery (table, fields) {
+  prepareQuery (table, fields, filters) {
+    let joins = ''
+
+    for (const filter of filters) {
+      const [ target, criteria ] = filter.split(':')
+
+      console.log(filter, target, criteria)
+
+      const [ first, second ] = criteria.split('.')
+
+      const criteria_table = second ? first : table
+      const criteria_field = second ? second : first
+
+      joins = joins.concat(`
+        INNER JOIN ${criteria_table} ON ${table}.${target} = ${criteria_table}.${criteria_field}
+      `)
+    }
+
     return `
       SELECT ${fields.join(", ")}
       FROM ${table}
+      ${joins}
       GROUP BY ${fields.join(", ")}
       ORDER BY ${fields.join(", ")}
     `
@@ -104,5 +122,6 @@ class Generate {
 module.exports = (program) => {
   program.command("generate <table> <relationships...>")
     .description("Generate hierarchical map of data based on relationships")
+    .option('-f, --filter <filters...>', 'Filter a column values with another column')
     .action((...args) => (new Generate()).action(...args))
 }
