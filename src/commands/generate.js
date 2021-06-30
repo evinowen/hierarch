@@ -48,16 +48,15 @@ class Generate {
   }
 
   iterateStatement (statement, callback) {
-    return new Promise((resolve, reject) => statement.each(
+    return statement.each(
       (err, row) => {
         if (err) {
-          reject(err)
+          throw err
         }
 
         callback(row)
-      },
-      (err, _) => err ? reject(err) : resolve()
-    ))
+      }
+    )
   }
 
   breakoutRelationships (relationships) {
