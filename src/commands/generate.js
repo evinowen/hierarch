@@ -13,9 +13,7 @@ class Generate {
     await database.connect()
 
     const {fields, identifiers, titles} = this.breakoutRelationships(relationships)
-    const query = this.prepareQuery(table, fields, options.filter ?? [])
-
-    const statement = await database.prepare(query)
+    const statement = await this.prepareStatement(database, table, fields, options.filter ?? [])
 
     let root = new Node()
     let node = root
@@ -84,31 +82,47 @@ class Generate {
     return { fields, identifiers, titles }
   }
 
-  prepareQuery (table, fields, filters) {
+  async prepareStatement (database, table, fields, filters) {
     let joins = ''
+    let conditions = ''
+    const parameters = []
 
     for (const filter of filters) {
       const [ target, criteria ] = filter.split(':')
 
       console.log(filter, target, criteria)
 
-      const [ first, second ] = criteria.split('.')
+      if (criteria.charAt(0) == '=') {
+        conditions = joins.concat(`
+          WHERE ${table}.${target} = ?
+        `)
 
-      const criteria_table = second ? first : table
-      const criteria_field = second ? second : first
+        parameters.push(criteria.substr(1))
+      } else {
+        const [ first, second ] = criteria.split('.')
 
-      joins = joins.concat(`
-        INNER JOIN ${criteria_table} ON ${table}.${target} = ${criteria_table}.${criteria_field}
-      `)
+        const criteria_table = second ? first : table
+        const criteria_field = second ? second : first
+
+        joins = joins.concat(`
+          INNER JOIN ${criteria_table} ON ${table}.${target} = ${criteria_table}.${criteria_field}
+        `)
+      }
     }
 
-    return `
+    let query = `
       SELECT ${fields.join(", ")}
       FROM ${table}
       ${joins}
+      ${conditions}
       GROUP BY ${fields.join(", ")}
       ORDER BY ${fields.join(", ")}
     `
+
+    let statement = await database.prepare(query)
+    await statement.bind(...parameters)
+
+    return statement
   }
 
   outputDocument (root) {
