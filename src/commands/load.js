@@ -1,7 +1,6 @@
 const config = require("../config")
-const fs = require("fs");
-const parser = require("csv-parse");
 const Database = require("../objects/Database")
+const Stream = require("../objects/Stream")
 
 class Load {
   async action (source, table) {
@@ -11,42 +10,35 @@ class Load {
 
     await database.connect()
 
-    let initalized = false;
     let statement;
 
-    let stream = fs.createReadStream(source)
-      .pipe(parser())
-      .on("data", async (row) => {
-        stream.pause()
+    const stream = new Stream(source)
 
-        if (!initalized) {
-          process.stdout.write(`Create table ${table} ... `);
-          const columns = this.createColumnsFromHeaders(row)
+    stream.onCreate(async (row) => {
+      const columns = this.createColumnsFromHeaders(row)
 
-          initalized = await database.createTable(columns)
+      await database.createTable(table, columns)
 
-          statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
+      statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
+    })
 
-          process.stdout.write(`complete.\n`);
-        } else {
-          await (new Promise((resolve, reject) => statement.run(row, (error) => error ? reject(error) : resolve(true))))
-        }
+    stream.onInsert(async (row) => {
+      await statement.run(row)
+    })
 
-        stream.resume()
-      })
-      .on("end", async () => {
-        statement.finalize()
+    stream.onEnd(async () => {
+      statement.finalize()
 
-        statement = await database.prepare(`SELECT COUNT(*) count FROM ${table}`)
+      statement = await database.prepare(`SELECT COUNT(*) count FROM ${table}`)
 
-        let row = await (new Promise((resolve, reject) => statement.get((err, row) => err ? reject(err) : resolve(row))))
+      let row = await statement.get()
+      process.stdout.write(` ${row.count} rows loaded into ${table}.\n`);
 
-        process.stdout.write(` ${row.count} rows loaded into ${table}.\n`);
+      statement.finalize()
+      database.close();
+    })
 
-        statement.finalize()
-
-        database.close();
-      });
+    await stream.execute()
   }
 
   createColumnsFromHeaders (headers) {
@@ -61,6 +53,6 @@ class Load {
 module.exports = (program) => {
   program.command("load <source> <table>")
     .description("Load a dataset into the database")
-    .action((...args) => (new Load()).action(...args))
+    .action(async (...args) => await (new Load()).action(...args))
 }
 
