@@ -1,4 +1,5 @@
-const sqlite3 = require("sqlite3")
+const sqlite3 = require('sqlite3').verbose()
+const { open } = require('sqlite')
 
 class Database {
   constructor (path) {
@@ -7,25 +8,22 @@ class Database {
   }
 
   async connect () {
-    this.connection = await (new Promise((resolve, reject) => {
-      resolve(new sqlite3.Database(this.path, (error) => error && reject(error)))
-    }))
+    this.connection = await open({
+      filename: this.path,
+      driver: sqlite3.Database
+    })
   }
 
-  async createTable (table, columns) {
-    return this.execute(`CREATE TABLE ${table} (${columns})`)
+  createTable (table, columns) {
+    return this.execute(`CREATE TABLE ${table} (${columns.join(', ')})`)
   }
 
   execute (query) {
-    return new Promise((resolve, reject) => {
-      resolve(this.connection.exec(query, (error) => error && reject(error)))
-    })
+    return this.connection.exec(query)
   }
 
   prepare (query) {
-    return new Promise((resolve, reject) => {
-      resolve(this.connection.prepare(query, (error) => error && reject(error)))
-    })
+    return this.connection.prepare(query)
   }
 
   close () {
