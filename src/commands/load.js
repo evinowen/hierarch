@@ -29,12 +29,10 @@ class Load {
     stream.onEnd(async () => {
       statement.finalize()
 
-      statement = await database.prepare(`SELECT COUNT(*) count FROM ${table}`)
+      let count = await database.countTable(table)
 
-      let row = await statement.get()
-      process.stdout.write(` ${row.count} rows loaded into ${table}.\n`);
+      process.stdout.write(` ${count} rows loaded into ${table}.\n`);
 
-      statement.finalize()
       database.close();
     })
 

@@ -18,6 +18,15 @@ class Database {
     return this.execute(`CREATE TABLE ${table} (${columns.join(', ')})`)
   }
 
+  async countTable (table) {
+    const statement = await this.prepare(`SELECT COUNT(*) count FROM ${table}`)
+
+    let result = await statement.get()
+    statement.finalize()
+
+    return result.count
+  }
+
   prepareTableInsert (table, columns) {
     return this.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
   }
