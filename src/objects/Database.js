@@ -18,6 +18,10 @@ class Database {
     return this.execute(`CREATE TABLE ${table} (${columns.join(', ')})`)
   }
 
+  prepareTableInsert (table, columns) {
+    return this.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
+  }
+
   execute (query) {
     return this.connection.exec(query)
   }

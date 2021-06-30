@@ -19,7 +19,7 @@ class Load {
 
       await database.createTable(table, columns)
 
-      statement = await database.prepare(`INSERT INTO ${table} VALUES (${"? ".repeat(columns.length).trim().split(" ").join(", ")})`)
+      statement = await database.prepareTableInsert(table, columns)
     })
 
     stream.onInsert(async (row) => {
